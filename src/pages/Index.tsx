@@ -1,7 +1,7 @@
-import { OnboardingDashboard } from "@/components/dashboard/OnboardingDashboard";
+import { HarvisDashboard } from "@/components/dashboard/HarvisDashboard";
 
 const Index = () => {
-  return <OnboardingDashboard />;
+  return <HarvisDashboard />;
 };
 
 export default Index;

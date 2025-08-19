@@ -165,6 +165,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
   };
 
   const handleAcceptAndContinue = () => {
+    console.log('Accept and Continue clicked, current step index:', currentStepIndex);
     if (currentStepIndex === 1) {
       // Move from human approval to compliance
       setSteps(prev => prev.map((step, index) => 
@@ -177,7 +178,33 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
       setCurrentStepIndex(2);
       setCurrentView("compliance");
       
-      // Simulate compliance processing
+      // Start compliance substeps processing
+      setSubSteps(prev => ({
+        ...prev,
+        compliance: prev.compliance.map((step, idx) => 
+          idx === 0 ? { ...step, status: "in-progress" } : step
+        )
+      }));
+      
+      // Simulate compliance processing with progressive updates
+      setTimeout(() => {
+        setSubSteps(prev => ({
+          ...prev,
+          compliance: prev.compliance.map((step, idx) => 
+            idx <= 1 ? { ...step, status: idx === 1 ? "in-progress" : "completed" } : step
+          )
+        }));
+      }, 1000);
+      
+      setTimeout(() => {
+        setSubSteps(prev => ({
+          ...prev,
+          compliance: prev.compliance.map((step, idx) => 
+            idx <= 2 ? { ...step, status: idx === 2 ? "in-progress" : "completed" } : step
+          )
+        }));
+      }, 2000);
+      
       setTimeout(() => {
         setSubSteps(prev => ({
           ...prev,
@@ -190,6 +217,8 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
             ? { ...step, status: "in-progress" }
             : step
         ));
+        setCurrentStepIndex(3);
+        setCurrentView("final");
         setShowComplianceResults(true);
       }, 3000);
     }
@@ -352,7 +381,17 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
   }
 
   if (currentView === "compliance") {
-    return <ComplianceResultsView onBack={onBack} onProceed={() => setShowComplianceResults(true)} />;
+    return <ComplianceResultsView onBack={onBack} onProceed={() => {
+      console.log('Proceeding from compliance to final approval');
+      setShowComplianceResults(true);
+    }} />;
+  }
+
+  if (currentView === "final") {
+    return <ComplianceResultsView onBack={onBack} onProceed={() => {
+      console.log('Proceeding from final compliance view');
+      setShowComplianceResults(true);
+    }} />;
   }
 
   return (

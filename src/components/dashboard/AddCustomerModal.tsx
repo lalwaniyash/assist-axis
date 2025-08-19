@@ -6,12 +6,23 @@ import { Label } from "@/components/ui/label";
 import { X, Upload, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface Customer {
+  id: string;
+  company: string;
+  applicationId: string;
+  submissionDate: string;
+  currentStage: string;
+  status: "In Progress" | "On Hold" | "Completed";
+  lastUpdated: string;
+}
+
 interface AddCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCustomerAdded: (customer: Customer) => void;
 }
 
-export const AddCustomerModal = ({ isOpen, onClose }: AddCustomerModalProps) => {
+export const AddCustomerModal = ({ isOpen, onClose, onCustomerAdded }: AddCustomerModalProps) => {
   const [customerName, setCustomerName] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -88,7 +99,17 @@ export const AddCustomerModal = ({ isOpen, onClose }: AddCustomerModalProps) => 
       return;
     }
 
-    // Simulate API call
+    // Create new customer
+    const newCustomer: Customer = {
+      id: Date.now().toString(),
+      company: customerName,
+      applicationId: `APP-2025-${Math.floor(Math.random() * 9999)}`,
+      submissionDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      currentStage: "OCR Processing",
+      status: "In Progress",
+      lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    };
+
     toast({
       title: "Customer Added",
       description: `${customerName} has been added and onboarding process started.`,
@@ -98,6 +119,9 @@ export const AddCustomerModal = ({ isOpen, onClose }: AddCustomerModalProps) => 
     setCustomerName("");
     setSelectedFile(null);
     onClose();
+    
+    // Trigger onboarding
+    onCustomerAdded(newCustomer);
   };
 
   const handleClose = () => {

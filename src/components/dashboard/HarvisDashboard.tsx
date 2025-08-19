@@ -134,6 +134,10 @@ export const HarvisDashboard = () => {
     setSelectedCustomer(customer);
   };
 
+  const handleCustomerAdded = (customer: Customer) => {
+    setSelectedCustomer(customer);
+  };
+
   if (selectedCustomer) {
     return (
       <OnboardingProgress 
@@ -271,6 +275,7 @@ export const HarvisDashboard = () => {
         <AddCustomerModal 
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
+          onCustomerAdded={handleCustomerAdded}
         />
       </div>
     </div>

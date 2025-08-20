@@ -166,74 +166,86 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
 
   const handleAcceptAndContinue = () => {
     console.log('Accept and Continue clicked, current step index:', currentStepIndex);
+    console.log('Current view:', currentView);
     
-    if (currentStepIndex === 0) {
+    if (currentView === "document-comparison") {
       // From document-comparison, show human verification modal first
+      console.log('Showing human verification modal');
       setShowHumanVerification(true);
     }
   };
 
   const handleFirstHumanVerificationApprove = () => {
     console.log('First human verification approved, moving to compliance');
+    console.log('Current step index before:', currentStepIndex);
+    console.log('Current view before:', currentView);
+    
     // Move from OCR to Human Approval (completed) and start Compliance
-    setSteps(prev => prev.map((step, index) => 
-      index === 0 || index === 1
-        ? { ...step, status: "completed" }
-        : index === 2
-        ? { ...step, status: "in-progress" }
-        : step
-    ));
+    setSteps(prev => {
+      const newSteps = prev.map((step, index) => 
+        index === 0 || index === 1
+          ? { ...step, status: "completed" as const }
+          : index === 2
+          ? { ...step, status: "in-progress" as const }
+          : step
+      );
+      console.log('Updated steps:', newSteps);
+      return newSteps;
+    });
+    
     setCurrentStepIndex(2);
     setShowHumanVerification(false);
     
     // Show compliance processing view first (Image 1)
     setCurrentView("processing");
+    console.log('Set current view to processing');
     
-    // Start compliance substeps processing
-    setSubSteps(prev => ({
-      ...prev,
-      compliance: prev.compliance.map((step, idx) => 
-        idx === 0 ? { ...step, status: "in-progress" } : step
-      )
-    }));
+      // Start compliance substeps processing
+      setSubSteps(prev => ({
+        ...prev,
+        compliance: prev.compliance.map((step, idx) => 
+          idx === 0 ? { ...step, status: "in-progress" as const } : step
+        )
+      }));
     
     // Simulate compliance processing with progressive updates
     setTimeout(() => {
       console.log('Compliance step 1 completed');
-      setSubSteps(prev => ({
-        ...prev,
-        compliance: prev.compliance.map((step, idx) => 
-          idx <= 1 ? { ...step, status: idx === 1 ? "in-progress" : "completed" } : step
-        )
-      }));
+        setSubSteps(prev => ({
+          ...prev,
+          compliance: prev.compliance.map((step, idx) => 
+            idx <= 1 ? { ...step, status: idx === 1 ? "in-progress" as const : "completed" as const } : step
+          )
+        }));
     }, 1500);
     
     setTimeout(() => {
       console.log('Compliance step 2 completed');
-      setSubSteps(prev => ({
-        ...prev,
-        compliance: prev.compliance.map((step, idx) => 
-          idx <= 2 ? { ...step, status: idx === 2 ? "in-progress" : "completed" } : step
-        )
-      }));
+        setSubSteps(prev => ({
+          ...prev,
+          compliance: prev.compliance.map((step, idx) => 
+            idx <= 2 ? { ...step, status: idx === 2 ? "in-progress" as const : "completed" as const } : step
+          )
+        }));
     }, 3000);
     
     setTimeout(() => {
       console.log('All compliance steps completed, showing results');
-      setSubSteps(prev => ({
-        ...prev,
-        compliance: prev.compliance.map(step => ({ ...step, status: "completed" }))
-      }));
-      setSteps(prev => prev.map((step, index) => 
-        index === 2 
-          ? { ...step, status: "completed" }
-          : index === 3
-          ? { ...step, status: "in-progress" }
-          : step
-      ));
+        setSubSteps(prev => ({
+          ...prev,
+          compliance: prev.compliance.map(step => ({ ...step, status: "completed" as const }))
+        }));
+        setSteps(prev => prev.map((step, index) => 
+          index === 2 
+            ? { ...step, status: "completed" as const }
+            : index === 3
+            ? { ...step, status: "in-progress" as const }
+            : step
+        ));
       setCurrentStepIndex(3);
       // Show compliance results view (Image 3)
       setCurrentView("compliance");
+      console.log('Moved to compliance results view');
     }, 4500);
   };
 
@@ -243,9 +255,9 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
       // Move from final approval to account creation
       setSteps(prev => prev.map((step, index) => 
         index === 3 
-          ? { ...step, status: "completed" }
+          ? { ...step, status: "completed" as const }
           : index === 4
-          ? { ...step, status: "in-progress" }
+          ? { ...step, status: "in-progress" as const }
           : step
       ));
       setCurrentStepIndex(4);
@@ -257,7 +269,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
   const handleAccountTypeSelect = () => {
     console.log('Account type selected, creating account');
     setSteps(prev => prev.map((step, index) => 
-      index === 4 ? { ...step, status: "completed" } : step
+      index === 4 ? { ...step, status: "completed" as const } : step
     ));
     setShowAccountTypeModal(false);
     setCurrentView("account-success");

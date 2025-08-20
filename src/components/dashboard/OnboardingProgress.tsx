@@ -174,6 +174,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
   };
 
   const handleFirstHumanVerificationApprove = () => {
+    console.log('First human verification approved, moving to compliance');
     // Move from OCR to Human Approval (completed) and start Compliance
     setSteps(prev => prev.map((step, index) => 
       index === 0 || index === 1
@@ -185,7 +186,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
     setCurrentStepIndex(2);
     setShowHumanVerification(false);
     
-    // Show compliance processing view first
+    // Show compliance processing view first (Image 1)
     setCurrentView("processing");
     
     // Start compliance substeps processing
@@ -198,24 +199,27 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
     
     // Simulate compliance processing with progressive updates
     setTimeout(() => {
+      console.log('Compliance step 1 completed');
       setSubSteps(prev => ({
         ...prev,
         compliance: prev.compliance.map((step, idx) => 
           idx <= 1 ? { ...step, status: idx === 1 ? "in-progress" : "completed" } : step
         )
       }));
-    }, 1000);
+    }, 1500);
     
     setTimeout(() => {
+      console.log('Compliance step 2 completed');
       setSubSteps(prev => ({
         ...prev,
         compliance: prev.compliance.map((step, idx) => 
           idx <= 2 ? { ...step, status: idx === 2 ? "in-progress" : "completed" } : step
         )
       }));
-    }, 2000);
+    }, 3000);
     
     setTimeout(() => {
+      console.log('All compliance steps completed, showing results');
       setSubSteps(prev => ({
         ...prev,
         compliance: prev.compliance.map(step => ({ ...step, status: "completed" }))
@@ -230,10 +234,11 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
       setCurrentStepIndex(3);
       // Show compliance results view (Image 3)
       setCurrentView("compliance");
-    }, 3000);
+    }, 4500);
   };
 
   const handleFinalHumanVerificationApprove = () => {
+    console.log('Final human verification approved, moving to account creation');
     if (currentStepIndex === 3) {
       // Move from final approval to account creation
       setSteps(prev => prev.map((step, index) => 
@@ -250,6 +255,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
   };
 
   const handleAccountTypeSelect = () => {
+    console.log('Account type selected, creating account');
     setSteps(prev => prev.map((step, index) => 
       index === 4 ? { ...step, status: "completed" } : step
     ));

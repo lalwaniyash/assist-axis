@@ -183,8 +183,10 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
         : step
     ));
     setCurrentStepIndex(2);
-    setCurrentView("compliance");
     setShowHumanVerification(false);
+    
+    // Show compliance processing view first
+    setCurrentView("processing");
     
     // Start compliance substeps processing
     setSubSteps(prev => ({
@@ -226,7 +228,8 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
           : step
       ));
       setCurrentStepIndex(3);
-      setCurrentView("final");
+      // Show compliance results view (Image 3)
+      setCurrentView("compliance");
     }, 3000);
   };
 
@@ -386,6 +389,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
   if (currentView === "compliance") {
     return <ComplianceResultsView onBack={onBack} onProceed={() => {
       console.log('Proceeding from compliance to final approval');
+      // Show final human verification modal (Image 4)
       setShowComplianceResults(true);
     }} />;
   }

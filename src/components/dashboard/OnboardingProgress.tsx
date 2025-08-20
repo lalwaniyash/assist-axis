@@ -77,7 +77,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
   const [showHumanVerification, setShowHumanVerification] = useState(false);
   const [showComplianceResults, setShowComplianceResults] = useState(false);
   const [showAccountTypeModal, setShowAccountTypeModal] = useState(false);
-  const [currentView, setCurrentView] = useState<"processing" | "document-comparison" | "compliance" | "final" | "account">("processing");
+  const [currentView, setCurrentView] = useState<"processing" | "document-comparison" | "compliance" | "final" | "account" | "account-success">("processing");
 
   const currentStep = steps[currentStepIndex];
   const currentSubSteps = subSteps[currentStep?.id] || [];
@@ -166,65 +166,71 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
 
   const handleAcceptAndContinue = () => {
     console.log('Accept and Continue clicked, current step index:', currentStepIndex);
-    if (currentStepIndex === 1) {
-      // Move from human approval to compliance
-      setSteps(prev => prev.map((step, index) => 
-        index === 1 
-          ? { ...step, status: "completed" }
-          : index === 2
-          ? { ...step, status: "in-progress" }
-          : step
-      ));
-      setCurrentStepIndex(2);
-      setCurrentView("compliance");
-      
-      // Start compliance substeps processing
-      setSubSteps(prev => ({
-        ...prev,
-        compliance: prev.compliance.map((step, idx) => 
-          idx === 0 ? { ...step, status: "in-progress" } : step
-        )
-      }));
-      
-      // Simulate compliance processing with progressive updates
-      setTimeout(() => {
-        setSubSteps(prev => ({
-          ...prev,
-          compliance: prev.compliance.map((step, idx) => 
-            idx <= 1 ? { ...step, status: idx === 1 ? "in-progress" : "completed" } : step
-          )
-        }));
-      }, 1000);
-      
-      setTimeout(() => {
-        setSubSteps(prev => ({
-          ...prev,
-          compliance: prev.compliance.map((step, idx) => 
-            idx <= 2 ? { ...step, status: idx === 2 ? "in-progress" : "completed" } : step
-          )
-        }));
-      }, 2000);
-      
-      setTimeout(() => {
-        setSubSteps(prev => ({
-          ...prev,
-          compliance: prev.compliance.map(step => ({ ...step, status: "completed" }))
-        }));
-        setSteps(prev => prev.map((step, index) => 
-          index === 2 
-            ? { ...step, status: "completed" }
-            : index === 3
-            ? { ...step, status: "in-progress" }
-            : step
-        ));
-        setCurrentStepIndex(3);
-        setCurrentView("final");
-        setShowComplianceResults(true);
-      }, 3000);
+    
+    if (currentStepIndex === 0) {
+      // From document-comparison, show human verification modal first
+      setShowHumanVerification(true);
     }
   };
 
-  const handleHumanVerificationApprove = () => {
+  const handleFirstHumanVerificationApprove = () => {
+    // Move from OCR to Human Approval (completed) and start Compliance
+    setSteps(prev => prev.map((step, index) => 
+      index === 0 || index === 1
+        ? { ...step, status: "completed" }
+        : index === 2
+        ? { ...step, status: "in-progress" }
+        : step
+    ));
+    setCurrentStepIndex(2);
+    setCurrentView("compliance");
+    setShowHumanVerification(false);
+    
+    // Start compliance substeps processing
+    setSubSteps(prev => ({
+      ...prev,
+      compliance: prev.compliance.map((step, idx) => 
+        idx === 0 ? { ...step, status: "in-progress" } : step
+      )
+    }));
+    
+    // Simulate compliance processing with progressive updates
+    setTimeout(() => {
+      setSubSteps(prev => ({
+        ...prev,
+        compliance: prev.compliance.map((step, idx) => 
+          idx <= 1 ? { ...step, status: idx === 1 ? "in-progress" : "completed" } : step
+        )
+      }));
+    }, 1000);
+    
+    setTimeout(() => {
+      setSubSteps(prev => ({
+        ...prev,
+        compliance: prev.compliance.map((step, idx) => 
+          idx <= 2 ? { ...step, status: idx === 2 ? "in-progress" : "completed" } : step
+        )
+      }));
+    }, 2000);
+    
+    setTimeout(() => {
+      setSubSteps(prev => ({
+        ...prev,
+        compliance: prev.compliance.map(step => ({ ...step, status: "completed" }))
+      }));
+      setSteps(prev => prev.map((step, index) => 
+        index === 2 
+          ? { ...step, status: "completed" }
+          : index === 3
+          ? { ...step, status: "in-progress" }
+          : step
+      ));
+      setCurrentStepIndex(3);
+      setCurrentView("final");
+    }, 3000);
+  };
+
+  const handleFinalHumanVerificationApprove = () => {
     if (currentStepIndex === 3) {
       // Move from final approval to account creation
       setSteps(prev => prev.map((step, index) => 
@@ -235,7 +241,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
           : step
       ));
       setCurrentStepIndex(4);
-      setShowHumanVerification(false);
+      setShowComplianceResults(false);
       setShowAccountTypeModal(true);
     }
   };
@@ -245,10 +251,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
       index === 4 ? { ...step, status: "completed" } : step
     ));
     setShowAccountTypeModal(false);
-    // Show success and redirect back to dashboard
-    setTimeout(() => {
-      onBack();
-    }, 2000);
+    setCurrentView("account-success");
   };
 
   const progressPercentage = Math.round((steps.filter(s => s.status === "completed").length / steps.length) * 100);
@@ -394,6 +397,58 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
     }} />;
   }
 
+  if (currentView === "account-success") {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-success rounded-full mx-auto flex items-center justify-center">
+              <CheckCircle className="h-8 w-8 text-success-foreground" />
+            </div>
+            <h1 className="text-3xl font-bold text-success">Account Created Successfully!</h1>
+            <p className="text-muted-foreground">Your bank account has been created and is ready to use.</p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Account Number</p>
+                  <p className="font-mono text-lg">4716-8935-2401</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Account Type</p>
+                  <p className="font-medium">Savings Account</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Customer Name</p>
+                  <p className="font-medium">John Doe</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Branch Code</p>
+                  <p className="font-mono">HARV001</p>
+                </div>
+              </div>
+              <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground">Welcome Package</p>
+                <p className="text-sm">A welcome kit with your debit card and cheque book will be sent to your registered address within 5-7 business days.</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="text-center">
+            <Button onClick={onBack} className="bg-primary hover:bg-primary/90">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -485,7 +540,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
         <HumanVerificationModal
           isOpen={showHumanVerification}
           onClose={() => setShowHumanVerification(false)}
-          onApprove={handleHumanVerificationApprove}
+          onApprove={handleFirstHumanVerificationApprove}
           title="Human Verification Required"
           message="Human-in-loop verification required"
         />
@@ -494,10 +549,7 @@ export const OnboardingProgress = ({ customer, onBack }: OnboardingProgressProps
           <HumanVerificationModal
             isOpen={showComplianceResults}
             onClose={() => setShowComplianceResults(false)}
-            onApprove={() => {
-              setShowComplianceResults(false);
-              setShowHumanVerification(true);
-            }}
+            onApprove={handleFinalHumanVerificationApprove}
             title="Human Verification Required"
             message="Human-in-loop verification required"
           />
